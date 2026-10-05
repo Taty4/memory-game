@@ -1,16 +1,11 @@
 export class GameState {
   constructor(images) {
     this.spaceImages = images;
-    this.counter = 0;
-    this.pairs = 0;
-    this.firstCard = null;
-    this.isBlockFlip = false;
-    this.cards = [];
     this.listeners = {};
-    this.timerID = null;
     this.leaders = JSON.parse(localStorage.getItem("leaders-taty4")) || [];
+
+    this.timerID = null;
     this.timerTimeID = null;
-    this.time = 0;
   }
 
   saveLeaders(data) {
@@ -25,28 +20,32 @@ export class GameState {
     this.listeners[eventName].push(callback);
   }
 
-  emit(eventName, data) {
-    if (this.listeners[eventName]) {
-      this.listeners[eventName].forEach((callback) => {
-        callback(data);
-      });
-    }
+  emit(eventName, ...args) {
+    this.listeners[eventName]?.forEach((callback) => callback(...args));
   }
 
-  initGame = () => {
-    const doubleImages = [...this.spaceImages, ...this.spaceImages];
-    this.cards = this.shuffle(doubleImages);
-
+  resetState() {
     this.counter = 0;
     this.pairs = 0;
     this.firstCard = null;
     this.isBlockFlip = false;
-    clearTimeout(this.timerID);
-    clearInterval(this.timerTimeID);
-    this.timerID = null;
-    this.timerTimeID = null;
+    this.cards = [];
     this.time = 0;
     this.date = this.getCurrentDate();
+
+    clearTimeout(this.timerID);
+    clearInterval(this.timerTimeID);
+
+    this.timerID = null;
+    this.timerTimeID = null;
+  }
+
+  initGame = () => {
+    this.resetState();
+
+    const doubleImages = [...this.spaceImages, ...this.spaceImages];
+    this.cards = this.shuffle(doubleImages);
+
     this.timerTimeID = setInterval(() => {
       this.time++;
       const formatedTime = this.formatTime();
@@ -58,7 +57,7 @@ export class GameState {
 
   formatTime() {
     const min = Math.floor(this.time / 60);
-    const sec = min === 0 ? this.time : this.time % min;
+    const sec = this.time % 60;
 
     return `${min.toString().padStart(2, "0")}:${sec.toString().padStart(2, "0")}`;
   }
@@ -82,24 +81,27 @@ export class GameState {
     return array;
   }
 
-  checkClickedCard = (card) => {
+  checkClickedCard = (index) => {
     if (this.isBlockFlip) return;
 
-    this.emit("flip-card", card);
+    this.emit("flip-card", index);
 
-    if (!this.firstCard) {
-      this.firstCard = card;
+    if (this.firstCard === null) {
+      this.firstCard = index;
     } else {
       this.isBlockFlip = true;
 
-      if (this.firstCard.dataset.id === card.dataset.id) {
+      const firstCardData = this.cards[this.firstCard];
+      const secondCardData = this.cards[index];
+
+      if (firstCardData.id === secondCardData.id) {
         this.isBlockFlip = false;
         this.firstCard = null;
         this.pairs++;
         this.checkWin();
       } else {
         this.timerID = setTimeout(() => {
-          this.emit("close-card", [this.firstCard, card]);
+          this.emit("close-card", [this.firstCard, index]);
           this.isBlockFlip = false;
           this.firstCard = null;
         }, 1000);
@@ -108,12 +110,13 @@ export class GameState {
       this.emit("statistic-change", {
         counter: this.counter,
         pairs: this.pairs,
+        totalPairs: this.spaceImages.length,
       });
     }
   };
 
   checkWin() {
-    if (this.pairs === 8) {
+    if (this.pairs === this.spaceImages.length) {
       const dataResult = {
         count: this.counter,
         date: this.date,

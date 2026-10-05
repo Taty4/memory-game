@@ -1,6 +1,5 @@
 export class View {
   constructor() {
-    this.cards = [];
     this.app = this.createElement({ tag: "div", className: "app" });
     document.body.prepend(this.app);
     this.listeners = {};
@@ -13,35 +12,36 @@ export class View {
     this.listeners[eventName].push(callback);
   }
 
-  emit(eventName, data) {
-    if (this.listeners[eventName]) {
-      this.listeners[eventName].forEach((callback) => {
-        callback(data);
-      });
-    }
+  emit(eventName, ...args) {
+    this.listeners[eventName]?.forEach((callback) => callback(...args));
   }
 
   renderGame = (cards) => {
-    this.cards = cards;
     this.app.replaceChildren();
 
+    this.cards = [];
+
     const header = this.renderHeader();
-    const scoreBlock = this.renderScoreBlocke();
+    const scoreBlock = this.renderScoreBlock();
 
     this.board = this.createElement({
       tag: "div",
       className: "game-board",
     });
 
-    this.cards.forEach((card) => {
-      this.board.append(this.createCard(card));
+    cards.forEach((card, index) => {
+      const cardElement = this.createCard(card, index);
+
+      this.cards.push(cardElement);
+      this.board.append(cardElement);
     });
 
     this.board.addEventListener("click", (event) => {
       const clickedCard = event.target.closest(".card");
 
       if (clickedCard && !clickedCard.classList.contains("flipped")) {
-        this.emit("card-clicked", clickedCard);
+        console.log(clickedCard);
+        this.emit("card-clicked", Number(clickedCard.dataset.index));
       }
     });
 
@@ -80,18 +80,18 @@ export class View {
     return closeModal;
   }
 
-  closeCard = (cards) => {
-    cards.forEach((card) => {
-      card.classList.remove("flipped");
+  closeCard = (indexes) => {
+    indexes.forEach((index) => {
+      this.cards[index]?.classList.remove("flipped");
     });
   };
 
-  flipCard = (card) => {
-    card.classList.add("flipped");
+  flipCard = (index) => {
+    this.cards[index]?.classList.add("flipped");
   };
 
   updateStatistic = (data) => {
-    this.pairsValue.textContent = `${data.pairs} / 8`;
+    this.pairsValue.textContent = `${data.pairs} / ${data.totalPairs}`;
     this.scoreValue.textContent = data.counter;
   };
 
@@ -99,9 +99,10 @@ export class View {
     this.timeValue.textContent = data;
   };
 
-  createCard(card) {
+  createCard(card, index) {
     const cardWrapper = this.createElement({ tag: "div", className: "card" });
     cardWrapper.dataset.id = card.id;
+    cardWrapper.dataset.index = index;
 
     const cardFront = this.createElement({
       tag: "div",
@@ -131,14 +132,16 @@ export class View {
     });
     const controls = this.createElement({
       tag: "div",
-      className: "hrader-controls",
+      className: "header-controls",
     });
     const btnNewGame = this.renderBtnNewGame();
     const btnLeader = this.createElement({
       tag: "button",
-      className: "header-btn header-btn-Leader",
+      className: "header-btn header-btn-leader",
       text: "Leaderboard",
     });
+
+    btnLeader.type = "button";
 
     btnLeader.addEventListener("click", () => this.emit("leaders-clicked"));
 
@@ -154,61 +157,52 @@ export class View {
       text: "New Game",
     });
 
+    btn.type = "button";
+
     btn.addEventListener("click", () => this.emit("reset-clicked"));
 
     return btn;
   }
 
-  renderScoreBlocke() {
+  renderScoreBlock() {
     const block = this.createElement({
       tag: "div",
       className: "game-statistic",
     });
 
-    const pairs = this.createElement({
-      tag: "p",
-      className: "statistic-pairs",
-      text: "Pairs Found: ",
-    });
+    const pairsData = this.createStatisticRow(
+      "Pairs Found: ",
+      "0 / 8",
+      "pairs",
+    );
+    const timeData = this.createStatisticRow("Time: ", "00:00", "time");
+    const scoreData = this.createStatisticRow("Score: ", "0", "score");
 
-    this.pairsValue = this.createElement({
-      tag: "span",
-      className: "pairs-value",
-      text: "0 / 8",
-    });
+    this.pairsValue = pairsData.valueSpan;
+    this.timeValue = timeData.valueSpan;
+    this.scoreValue = scoreData.valueSpan;
 
-    pairs.append(this.pairsValue);
+    block.append(pairsData.row, timeData.row, scoreData.row);
 
-    const time = this.createElement({
-      tag: "p",
-      className: "statistic-time",
-      text: "Time: ",
-    });
-
-    this.timeValue = this.createElement({
-      tag: "span",
-      className: "time-value",
-      text: "00:00",
-    });
-
-    time.append(this.timeValue);
-
-    const score = this.createElement({
-      tag: "p",
-      className: "statistic-score",
-      text: "Score: ",
-    });
-
-    this.scoreValue = this.createElement({
-      tag: "span",
-      className: "score-value",
-      text: "0",
-    });
-
-    score.append(this.scoreValue);
-
-    block.append(pairs, time, score);
     return block;
+  }
+
+  createStatisticRow(labelText, initialValue, className) {
+    const row = this.createElement({
+      tag: "p",
+      className: `statistic-${className}`,
+      text: labelText,
+    });
+
+    const valueSpan = this.createElement({
+      tag: "span",
+      className: `${className}-value`,
+      text: initialValue,
+    });
+
+    row.append(valueSpan);
+
+    return { row, valueSpan };
   }
 
   openModalWin = (data) => {
@@ -224,7 +218,7 @@ export class View {
     const res = this.createElement({
       tag: "p",
       className: "result-modal",
-      text: `Тебе понадобилось ${data.counter} ходов и столько минут для победы`,
+      text: `Тебе понадобилось ходов: ${data.count}, а время игры составило: ${data.time}`,
     });
 
     const offer = this.createElement({
@@ -252,56 +246,49 @@ export class View {
     const title = this.createElement({
       tag: "p",
       className: "title-modal",
-      text: "Таблица пебедителей!",
+      text: "Таблица победителей!",
     });
-
-    this.modalContent.append(title);
 
     const table = this.createElement({
       tag: "div",
       className: "table-modal",
     });
 
-    data.forEach((res, index) => {
+    data.forEach(({ count, time, date }, index) => {
       const stroke = this.createElement({
         tag: "div",
         className: "modal-stroke",
       });
 
-      const ceilNumber = this.createElement({
-        tag: "p",
-        className: "modal-ceil",
-        text: `${index + 1}`,
-      });
+      stroke.append(
+        this.createCell(index + 1),
+        this.createCell(count),
+        this.createCell(time),
+        this.createCell(date),
+      );
 
-      const ceilCount = this.createElement({
-        tag: "p",
-        className: "modal-ceil",
-        text: res.count,
-      });
-      const ceilTime = this.createElement({
-        tag: "p",
-        className: "modal-ceil",
-        text: res.time,
-      });
-      const ceilDate = this.createElement({
-        tag: "p",
-        className: "modal-ceil",
-        text: res.date,
-      });
-      stroke.append(ceilNumber, ceilCount, ceilTime, ceilDate);
       table.append(stroke);
     });
 
-    this.modalContent.append(table);
+    this.modalContent.append(title, table, this.renderBtnCloseModal());
   };
+
+  createCell(text) {
+    return this.createElement({
+      tag: "p",
+      className: "modal-ceil",
+      text: String(text),
+    });
+  }
 
   createElement(options) {
     const element = document.createElement(options.tag);
-    element.className = options.className;
-    if (options.text) {
-      element.textContent = options.text;
-    }
+
+    if (options.className) element.className = options.className;
+    if (options.text) element.textContent = options.text;
+
+    const { tag, className, text, ...attrs } = options;
+    Object.assign(element, attrs);
 
     return element;
   }
