@@ -126,7 +126,7 @@ export class GameModal {
     const title = createElement({
       tag: "p",
       className: "title-modal",
-      text: "Leaderbord",
+      text: "Leaderboard",
     });
 
     const table = createElement({
