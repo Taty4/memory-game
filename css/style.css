@@ -306,7 +306,7 @@ body {
   }
 }
 
-.card.error {
+.card.error .card-front {
   animation: shake 0.4s ease-in-out;
 }
 

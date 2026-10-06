@@ -48,7 +48,6 @@ export class View {
       const clickedCard = event.target.closest(".card");
 
       if (clickedCard && !clickedCard.classList.contains("flipped")) {
-        console.log(clickedCard);
         this.emit("card-clicked", Number(clickedCard.dataset.index));
       }
     });

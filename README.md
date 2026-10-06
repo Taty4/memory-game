@@ -45,5 +45,5 @@
 
 - **Язык:** JavaScript (ES6+ Модули)
 - **Разметка:** Семантический HTML5 (`<header>`, `<dialog>`)
-- **Стили:** CSS3 (Flexbox, Grid, CSS-переменные)
+- **Стили:** CSS3 (Flexbox, Grid)
 - **Хранилище данных:** Web Storage API (`localStorage`)
