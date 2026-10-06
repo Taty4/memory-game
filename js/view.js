@@ -98,7 +98,6 @@ export class View {
 
   createCard(card, index) {
     const cardWrapper = createElement({ tag: "div", className: "card" });
-    cardWrapper.dataset.id = card.id;
     cardWrapper.dataset.index = index;
 
     const cardFront = createElement({
