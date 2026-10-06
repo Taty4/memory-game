@@ -146,11 +146,16 @@ body {
     width: 100%;
     height: 100%;
     border-radius: 10px;
+    user-select: none;
   }
 }
 
 .card.flipped {
   transform: rotateY(180deg);
+}
+
+.card:not(.card.flipped) {
+  cursor: pointer;
 }
 
 .card-front,
@@ -192,25 +197,16 @@ body {
 }
 
 .modal-content {
-  background: rgba(
-    30,
-    22,
-    17,
-    0.95
-  ); /* Глубокий тёмно-коричневый с лёгкой прозрачностью */
-  border: 2px solid #d47a2a; /* Благородная янтарная рамка, как у кнопок */
-  border-radius: 16px; /* Закругляем углы под стиль игры */
+  background: rgba(30, 22, 17, 0.75);
+  border: 2px solid #d47a2a;
+  border-radius: 16px;
   padding: 30px;
-  color: #fff3eb; /* Мягкий тёплый цвет текста */
+  color: #fff3eb;
   box-shadow:
     0 0 30px rgba(212, 122, 42, 0.25),
-    0 15px 40px rgba(0, 0, 0, 0.6); /* Мягкое янтарное свечение вокруг окна */
+    0 15px 40px rgba(0, 0, 0, 0.6);
   text-align: center;
-  max-width: 450px;
-}
-
-.modal-content.leaders-content {
-  max-width: 600px;
+  width: 100%;
 }
 
 .title-modal {
@@ -276,10 +272,14 @@ body {
   margin-bottom: 10px;
 }
 
+.modal-no-leeders {
+  margin-bottom: 15px;
+  margin-top: 25px;
+}
+
 @keyframes shake {
   0%,
   100% {
-    /* Сохраняем поворот в 180 градусов и добавляем сдвиг */
     transform: rotateY(180deg) translateX(0);
   }
   20%,
@@ -294,7 +294,6 @@ body {
 
 @keyframes pulse-success {
   0% {
-    /* Поворот ДОЛЖЕН стоять на первом месте, затем масштаб! */
     transform: rotateY(180deg) scale(1);
   }
   50% {
@@ -308,7 +307,6 @@ body {
 }
 
 .card.error {
-  /* 0.4s — оптимально для плавного эффекта тряски */
   animation: shake 0.4s ease-in-out;
 }
 

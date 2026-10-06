@@ -105,16 +105,27 @@ export class View {
       tag: "div",
       className: "card-front",
     });
-    const img = createElement({ tag: "img", className: "card-img" });
-    img.src = card.imgSrc;
+    const img = createElement({
+      tag: "img",
+      className: "card-img",
+      src: card.imgSrc,
+      alt: "img planet",
+      draggable: false,
+    });
     cardFront.append(img);
 
     const cardBack = createElement({
       tag: "div",
       className: "card-back",
     });
-    const imgBack = createElement({ tag: "img", className: "card-img" });
-    imgBack.src = "./assets/images/back.webp";
+    const imgBack = createElement({
+      tag: "img",
+      className: "card-img",
+      src: "./assets/images/back.webp",
+      alt: "card back",
+      draggable: false,
+    });
+
     cardBack.append(imgBack);
 
     cardWrapper.append(cardFront, cardBack);

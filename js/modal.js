@@ -50,7 +50,7 @@ export class GameModal {
     const btn = createElement({
       tag: "button",
       className: "btn-close",
-      text: "Закрыть",
+      text: "Close",
     });
     btn.addEventListener("click", () => this.close());
     return btn;
@@ -60,7 +60,7 @@ export class GameModal {
     const btn = createElement({
       tag: "button",
       className: "btn-new-game",
-      text: "Играть снова",
+      text: "Play again",
     });
     btn.addEventListener("click", () => {
       this.close();
@@ -73,7 +73,6 @@ export class GameModal {
   openWin(data) {
     this.modalContent.replaceChildren();
 
-    this.modalContent.classList.toggle("leaders-content", false);
     this.modalTimeout = setTimeout(() => {
       this.open();
     }, 400);
@@ -81,25 +80,25 @@ export class GameModal {
     const title = createElement({
       tag: "p",
       className: "title-modal",
-      text: "Поздравляю! Ты выиграл!",
+      text: "Congratulations! You won!",
     });
 
     const moveInfo = createElement({
       tag: "p",
       className: "result-modal",
-      text: `Количество ходов: ${data.count}`,
+      text: `Number of moves: ${data.count}`,
     });
 
     const timeInfo = createElement({
       tag: "p",
       className: "result-modal",
-      text: `Время игры: ${data.time}`,
+      text: `Playtime: ${data.time}`,
     });
 
     const offer = createElement({
       tag: "p",
       className: "offer-modal",
-      text: `Хочешь сыграть еще раз?`,
+      text: `Do you want to play again?`,
     });
 
     const blockControlModal = createElement({
@@ -124,12 +123,10 @@ export class GameModal {
     this.modalContent.replaceChildren();
     this.open();
 
-    this.modalContent.classList.toggle("leaders-content", true);
-
     const title = createElement({
       tag: "p",
       className: "title-modal",
-      text: "Таблица победителей!",
+      text: "Leaderbord",
     });
 
     const table = createElement({
@@ -143,10 +140,10 @@ export class GameModal {
     });
 
     tableHeader.append(
-      this.createCell("Номер"),
-      this.createCell("Ходы"),
-      this.createCell("Время"),
-      this.createCell("Дата"),
+      this.createCell("Number"),
+      this.createCell("Moves"),
+      this.createCell("Time"),
+      this.createCell("Date"),
     );
 
     table.append(tableHeader);
@@ -164,6 +161,20 @@ export class GameModal {
       table.append(stroke);
     });
 
-    this.modalContent.append(title, table, this.renderBtnCloseModal());
+    const noLeadersInfo = createElement({
+      tag: "p",
+      className: "modal-no-leeders",
+      text: "Complete your first game to see your score here!",
+    });
+
+    if (data.length === 0) {
+      this.modalContent.append(
+        title,
+        noLeadersInfo,
+        this.renderBtnCloseModal(),
+      );
+    } else {
+      this.modalContent.append(title, table, this.renderBtnCloseModal());
+    }
   }
 }
