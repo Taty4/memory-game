@@ -21,6 +21,8 @@ state.on("statistic-change", view.updateStatistic);
 state.on("time-change", view.updateTime);
 state.on("init-game", view.renderGame);
 state.on("win", view.openModalWin);
+state.on("valid-pairs", view.validPairs);
+state.on("invalid-pairs", view.invalidPairs);
 
 view.on("leaders-clicked", () => view.openModalLeaders(state.leaders));
 view.on("card-clicked", state.checkClickedCard);

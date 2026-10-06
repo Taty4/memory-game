@@ -1,8 +1,15 @@
+import { createElement } from "./utils.js";
+import { GameModal } from "./modal.js";
+import { SoundFX } from "./sound.js";
+
 export class View {
   constructor() {
-    this.app = this.createElement({ tag: "div", className: "app" });
+    this.app = createElement({ tag: "div", className: "app" });
     document.body.prepend(this.app);
     this.listeners = {};
+    this.modalComponent = new GameModal({
+      onNewGame: () => this.emit("reset-clicked"),
+    });
   }
 
   on(eventName, callback) {
@@ -23,8 +30,9 @@ export class View {
 
     const header = this.renderHeader();
     const scoreBlock = this.renderScoreBlock();
+    const controlsBlock = this.renderControlsButtons();
 
-    this.board = this.createElement({
+    this.board = createElement({
       tag: "div",
       className: "game-board",
     });
@@ -45,39 +53,73 @@ export class View {
       }
     });
 
-    this.modal = this.renderModal();
+    this.modal = this.modalComponent.getElement();
 
-    this.app.append(header, scoreBlock, this.board, this.modal);
+    this.app.append(header, scoreBlock, controlsBlock, this.board, this.modal);
   };
 
-  renderModal() {
-    const modal = this.createElement({ tag: "dialog", className: "modal" });
-
-    this.modalContent = this.createElement({
-      tag: "div",
-      className: "modal-content",
+  renderHeader() {
+    const element = createElement({ tag: "header", className: "header" });
+    const nameGame = createElement({
+      tag: "h1",
+      className: "header-name",
+      text: "Memory Game",
     });
 
-    modal.addEventListener("click", (event) => {
-      if (event.target === modal) {
-        modal.close();
-      }
-    });
-
-    modal.append(this.modalContent);
-    return modal;
+    element.append(nameGame);
+    return element;
   }
 
-  renderBtnCloseModal() {
-    const closeModal = this.createElement({
+  renderControlsButtons() {
+    const controls = createElement({
+      tag: "div",
+      className: "header-controls",
+    });
+    const btnNewGame = createElement({
       tag: "button",
-      className: "close-modal",
-      text: "Close",
+      className: "header-btn btn-new-game",
+      text: "New Game",
+      type: "button",
     });
 
-    closeModal.addEventListener("click", () => this.modal.close());
+    const btnLeader = createElement({
+      tag: "button",
+      className: "header-btn header-btn-leader",
+      text: "Leaderboard",
+      type: "button",
+    });
 
-    return closeModal;
+    btnNewGame.addEventListener("click", () => this.emit("reset-clicked"));
+    btnLeader.addEventListener("click", () => this.emit("leaders-clicked"));
+
+    controls.append(btnNewGame, btnLeader);
+    return controls;
+  }
+
+  createCard(card, index) {
+    const cardWrapper = createElement({ tag: "div", className: "card" });
+    cardWrapper.dataset.id = card.id;
+    cardWrapper.dataset.index = index;
+
+    const cardFront = createElement({
+      tag: "div",
+      className: "card-front",
+    });
+    const img = createElement({ tag: "img", className: "card-img" });
+    img.src = card.imgSrc;
+    cardFront.append(img);
+
+    const cardBack = createElement({
+      tag: "div",
+      className: "card-back",
+    });
+    const imgBack = createElement({ tag: "img", className: "card-img" });
+    imgBack.src = "./assets/images/back.webp";
+    cardBack.append(imgBack);
+
+    cardWrapper.append(cardFront, cardBack);
+
+    return cardWrapper;
   }
 
   closeCard = (indexes) => {
@@ -87,85 +129,32 @@ export class View {
   };
 
   flipCard = (index) => {
+    SoundFX.play("click");
     this.cards[index]?.classList.add("flipped");
   };
 
-  updateStatistic = (data) => {
-    this.pairsValue.textContent = `${data.pairs} / ${data.totalPairs}`;
-    this.scoreValue.textContent = data.counter;
+  validPairs = (indexes) => {
+    SoundFX.play("success");
+    indexes.forEach((index) => {
+      this.cards[index]?.classList.add("success");
+      setTimeout(() => {
+        this.cards[index]?.classList.remove("success");
+      }, 400);
+    });
   };
 
-  updateTime = (data) => {
-    this.timeValue.textContent = data;
+  invalidPairs = (indexes) => {
+    SoundFX.play("error");
+    indexes.forEach((index) => {
+      this.cards[index]?.classList.add("error");
+      setTimeout(() => {
+        this.cards[index]?.classList.remove("error");
+      }, 400);
+    });
   };
-
-  createCard(card, index) {
-    const cardWrapper = this.createElement({ tag: "div", className: "card" });
-    cardWrapper.dataset.id = card.id;
-    cardWrapper.dataset.index = index;
-
-    const cardFront = this.createElement({
-      tag: "div",
-      className: "card-front",
-    });
-    const img = this.createElement({ tag: "img", className: "card-img" });
-    img.src = card.imgSrc;
-    cardFront.append(img);
-
-    const cardBack = this.createElement({
-      tag: "div",
-      className: "card-back",
-      text: "back",
-    });
-
-    cardWrapper.append(cardFront, cardBack);
-
-    return cardWrapper;
-  }
-
-  renderHeader() {
-    const element = this.createElement({ tag: "header", className: "header" });
-    const nameGame = this.createElement({
-      tag: "h1",
-      className: "header-name",
-      text: "Memory Game",
-    });
-    const controls = this.createElement({
-      tag: "div",
-      className: "header-controls",
-    });
-    const btnNewGame = this.renderBtnNewGame();
-    const btnLeader = this.createElement({
-      tag: "button",
-      className: "header-btn header-btn-leader",
-      text: "Leaderboard",
-    });
-
-    btnLeader.type = "button";
-
-    btnLeader.addEventListener("click", () => this.emit("leaders-clicked"));
-
-    controls.append(btnNewGame, btnLeader);
-    element.append(nameGame, controls);
-    return element;
-  }
-
-  renderBtnNewGame() {
-    const btn = this.createElement({
-      tag: "button",
-      className: "header-btn btn-new-game",
-      text: "New Game",
-    });
-
-    btn.type = "button";
-
-    btn.addEventListener("click", () => this.emit("reset-clicked"));
-
-    return btn;
-  }
 
   renderScoreBlock() {
-    const block = this.createElement({
+    const block = createElement({
       tag: "div",
       className: "game-statistic",
     });
@@ -187,14 +176,23 @@ export class View {
     return block;
   }
 
+  updateStatistic = (data) => {
+    this.pairsValue.textContent = `${data.pairs} / ${data.totalPairs}`;
+    this.scoreValue.textContent = data.counter;
+  };
+
+  updateTime = (data) => {
+    this.timeValue.textContent = data;
+  };
+
   createStatisticRow(labelText, initialValue, className) {
-    const row = this.createElement({
+    const row = createElement({
       tag: "p",
       className: `statistic-${className}`,
       text: labelText,
     });
 
-    const valueSpan = this.createElement({
+    const valueSpan = createElement({
       tag: "span",
       className: `${className}-value`,
       text: initialValue,
@@ -206,90 +204,10 @@ export class View {
   }
 
   openModalWin = (data) => {
-    this.modalContent.replaceChildren();
-    this.modal.showModal();
-
-    const title = this.createElement({
-      tag: "p",
-      className: "title-modal",
-      text: "Поздравляю! Ты выиграл!",
-    });
-
-    const res = this.createElement({
-      tag: "p",
-      className: "result-modal",
-      text: `Тебе понадобилось ходов: ${data.count}, а время игры составило: ${data.time}`,
-    });
-
-    const offer = this.createElement({
-      tag: "p",
-      className: "offer-modal",
-      text: `Хочешь сыграть еще раз?`,
-    });
-
-    const blockControlModal = this.createElement({
-      tag: "div",
-      className: "controls-modal",
-    });
-
-    blockControlModal.append(
-      this.renderBtnNewGame(),
-      this.renderBtnCloseModal(),
-    );
-    this.modalContent.append(title, res, offer, blockControlModal);
+    this.modalComponent.openWin(data);
   };
 
   openModalLeaders = (data) => {
-    this.modalContent.replaceChildren();
-    this.modal.showModal();
-
-    const title = this.createElement({
-      tag: "p",
-      className: "title-modal",
-      text: "Таблица победителей!",
-    });
-
-    const table = this.createElement({
-      tag: "div",
-      className: "table-modal",
-    });
-
-    data.forEach(({ count, time, date }, index) => {
-      const stroke = this.createElement({
-        tag: "div",
-        className: "modal-stroke",
-      });
-
-      stroke.append(
-        this.createCell(index + 1),
-        this.createCell(count),
-        this.createCell(time),
-        this.createCell(date),
-      );
-
-      table.append(stroke);
-    });
-
-    this.modalContent.append(title, table, this.renderBtnCloseModal());
+    this.modalComponent.openLeaders(data);
   };
-
-  createCell(text) {
-    return this.createElement({
-      tag: "p",
-      className: "modal-ceil",
-      text: String(text),
-    });
-  }
-
-  createElement(options) {
-    const element = document.createElement(options.tag);
-
-    if (options.className) element.className = options.className;
-    if (options.text) element.textContent = options.text;
-
-    const { tag, className, text, ...attrs } = options;
-    Object.assign(element, attrs);
-
-    return element;
-  }
 }

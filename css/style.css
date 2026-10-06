@@ -2,31 +2,144 @@
   box-sizing: border-box;
 }
 
+h1,
+h2,
+h3,
+h4,
+h5,
+p {
+  margin: 0;
+}
+
 body:has(dialog[open]) {
   overflow: hidden;
 }
 
+:root {
+  --violet-dark: rgb(84, 0, 122);
+  --violet-moddle: rgb(173, 0, 193);
+  --violet-light: rgb(183, 148, 223);
+  --blue-dark: rgb(3, 51, 125);
+  --blue-middle: rgb(6, 73, 151);
+  --main-text: rgb(203, 209, 216);
+}
+
+body {
+  background: radial-gradient(circle at center, #2c1a10 0%, #140f0b 100%);
+  font-family: "Rubik", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+}
+
 .app {
-  max-width: 1200px;
+  max-width: 800px;
   margin: 0 auto;
   display: flex;
   align-items: center;
   flex-direction: column;
 }
+.header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-direction: column;
+}
+
+.header-name {
+  font-family: "Bungee", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+  color: #ffffff;
+  -webkit-text-stroke: 2px rgba(255, 123, 0, 0.7);
+  text-shadow: 0 0 15px rgba(255, 123, 0, 0.7);
+  letter-spacing: 15%;
+  font-size: 40px;
+}
+
+.game-statistic {
+  margin-top: 10px;
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 400px;
+  padding: 10px;
+  background-color: #33241b;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 123, 0, 0.2);
+  color: #ffffff;
+  font-family: "Rubik", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 500;
+  font-style: normal;
+}
+
+.header-controls {
+  margin: 10px 0;
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  gap: 5%;
+}
+
+.btn-new-game {
+  padding: 6px 28px;
+  background: linear-gradient(135deg, #d47a2a 0%, #a65615 100%);
+  color: #fff3eb;
+  font-weight: 600;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  transition:
+    background 0.3s,
+    transform 0.2s;
+  cursor: pointer;
+}
+
+.header-btn-leader {
+  background: transparent;
+  color: #ff9e42;
+  border-radius: 8px;
+  padding: 6px 28px;
+  border: 2px solid #ff7b00;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.header-btn-leader:hover {
+  background-color: rgba(255, 123, 0, 0.1);
+}
+
+.btn-new-game:hover {
+  background: linear-gradient(
+    135deg,
+    #e88939 0%,
+    #bd651b 100%
+  ); /* Мягкое, не «вырвиглазное» осветление */
+  transform: translateY(-1px);
+}
 
 .game-board {
   width: 100%;
   max-width: 400px;
-  padding: 10px;
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  background-color: #d31818;
   gap: 10px;
+
+  background: rgba(38, 27, 20, 0.85);
+  border: 1px solid rgba(255, 123, 0, 0.15);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
 
 .card {
+  border-radius: 8px;
+  border: 2px solid #4a3325;
+
   aspect-ratio: 1 /1;
-  background-color: #e47c7c;
   position: relative;
   transition: transform 0.4s;
   transform-style: preserve-3d;
@@ -35,7 +148,8 @@ body:has(dialog[open]) {
   img {
     display: block;
     width: 100%;
-    height: auto;
+    height: 100%;
+    border-radius: 10px;
   }
 }
 
@@ -45,23 +159,19 @@ body:has(dialog[open]) {
 
 .card-front,
 .card-back {
+  overflow: hidden;
   position: absolute;
   width: 100%;
   height: 100%;
+
   backface-visibility: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.card-back {
-  background-color: #3498db;
-  color: white;
-}
-
 .card-front {
-  background-color: #e74c3c;
-  color: white;
+  border-radius: 10px;
   transform: rotateY(180deg);
 }
 
@@ -80,10 +190,49 @@ body:has(dialog[open]) {
 }
 
 .modal-content {
-  /* Убираем дефолтную черную рамку браузера */
   border: none;
 
   background-color: #ffffff;
   color: #333333;
   padding: 20px;
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    /* Сохраняем поворот в 180 градусов и добавляем сдвиг */
+    transform: rotateY(180deg) translateX(0);
+  }
+  20%,
+  60% {
+    transform: rotateY(180deg) translateX(-6px);
+  }
+  40%,
+  80% {
+    transform: rotateY(180deg) translateX(6px);
+  }
+}
+
+@keyframes pulse-success {
+  0% {
+    /* Поворот ДОЛЖЕН стоять на первом месте, затем масштаб! */
+    transform: rotateY(180deg) scale(1);
+  }
+  50% {
+    transform: rotateY(180deg) scale(1.1);
+    box-shadow: 0 0 15px rgba(247, 13, 255, 0.8);
+  }
+  100% {
+    transform: rotateY(180deg) scale(1);
+    opacity: 0.6;
+  }
+}
+
+.card.error {
+  /* 0.4s — оптимально для плавного эффекта тряски */
+  animation: shake 0.4s ease-in-out;
+}
+
+.card.success .card-front {
+  animation: pulse-success 0.5s ease-in-out forwards;
 }

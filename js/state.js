@@ -90,23 +90,25 @@ export class GameState {
       this.firstCard = index;
     } else {
       this.isBlockFlip = true;
-
+      this.counter++;
       const firstCardData = this.cards[this.firstCard];
       const secondCardData = this.cards[index];
 
       if (firstCardData.id === secondCardData.id) {
+        this.emit("valid-pairs", [this.firstCard, index]);
         this.isBlockFlip = false;
         this.firstCard = null;
         this.pairs++;
         this.checkWin();
       } else {
+        this.emit("invalid-pairs", [this.firstCard, index]);
         this.timerID = setTimeout(() => {
           this.emit("close-card", [this.firstCard, index]);
           this.isBlockFlip = false;
           this.firstCard = null;
         }, 1000);
       }
-      this.counter++;
+
       this.emit("statistic-change", {
         counter: this.counter,
         pairs: this.pairs,
@@ -123,6 +125,7 @@ export class GameState {
         time: this.formatTime(),
       };
       this.saveLeaders(dataResult);
+      clearInterval(this.timerTimeID);
       this.emit("win", dataResult);
     }
   }
