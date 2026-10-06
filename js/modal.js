@@ -72,6 +72,8 @@ export class GameModal {
 
   openWin(data) {
     this.modalContent.replaceChildren();
+
+    this.modalContent.classList.toggle("leaders-content", false);
     this.modalTimeout = setTimeout(() => {
       this.open();
     }, 400);
@@ -82,10 +84,16 @@ export class GameModal {
       text: "Поздравляю! Ты выиграл!",
     });
 
-    const res = createElement({
+    const moveInfo = createElement({
       tag: "p",
       className: "result-modal",
-      text: `Тебе понадобилось ходов: ${data.count}, а время игры составило: ${data.time}`,
+      text: `Количество ходов: ${data.count}`,
+    });
+
+    const timeInfo = createElement({
+      tag: "p",
+      className: "result-modal",
+      text: `Время игры: ${data.time}`,
     });
 
     const offer = createElement({
@@ -103,12 +111,20 @@ export class GameModal {
       this.renderBtnNewGame(),
       this.renderBtnCloseModal(),
     );
-    this.modalContent.append(title, res, offer, blockControlModal);
+    this.modalContent.append(
+      title,
+      moveInfo,
+      timeInfo,
+      offer,
+      blockControlModal,
+    );
   }
 
   openLeaders(data) {
     this.modalContent.replaceChildren();
     this.open();
+
+    this.modalContent.classList.toggle("leaders-content", true);
 
     const title = createElement({
       tag: "p",
@@ -120,6 +136,20 @@ export class GameModal {
       tag: "div",
       className: "table-modal",
     });
+
+    const tableHeader = createElement({
+      tag: "div",
+      className: "table-header modal-stroke",
+    });
+
+    tableHeader.append(
+      this.createCell("Номер"),
+      this.createCell("Ходы"),
+      this.createCell("Время"),
+      this.createCell("Дата"),
+    );
+
+    table.append(tableHeader);
 
     data.forEach(({ count, time, date }, index) => {
       const stroke = createElement({ tag: "div", className: "modal-stroke" });

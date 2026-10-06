@@ -9,7 +9,10 @@ export class GameState {
   }
 
   saveLeaders(data) {
-    this.leaders.push(data);
+    this.leaders = [...this.leaders, data]
+      .sort((a, b) => a.count - b.count)
+      .filter((_, index) => index < 10);
+
     localStorage.setItem("leaders-taty4", JSON.stringify(this.leaders));
   }
 
@@ -64,13 +67,7 @@ export class GameState {
 
   getCurrentDate() {
     const currentDate = new Date();
-    return currentDate
-      .toLocaleString("ru-RU", {
-        day: "2-digit",
-        month: "long",
-        year: "numeric",
-      })
-      .replace("г.", "");
+    return currentDate.toLocaleDateString("ru-RU");
   }
 
   shuffle(array) {
